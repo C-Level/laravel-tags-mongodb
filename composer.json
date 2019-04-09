@@ -1,0 +1,49 @@
+{
+    "name": "clevel/laravel-tags",
+    "description": "Add tags and taggable behaviour to your Laravel app For MongoDB",
+    "keywords": [
+        "clevel",
+        "laravel-tags"
+    ],
+    "homepage": "https://github.com/clevel/laravel-tags",
+    "license": "MIT",
+    "authors": [{
+        "name": "Burak Sormageç",
+        "email": "burak@clevel.team",
+        "homepage": "https://clevel.team",
+        "role": "Developer"
+    }],
+    "require": {
+        "php": "^7.2",
+        "laravel/framework": "~5.8",
+        "jenssegers/mongodb": "^3.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0",
+        "orchestra/testbench": "~3.8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Clevel\\Tags\\": "src"
+        }
+    },
+
+    "autoload-dev": {
+        "psr-4": {
+            "Clevel\\Tags\\Test\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Clevel\\Tags\\TagsServiceProvider"
+            ]
+        }
+    }
+}
