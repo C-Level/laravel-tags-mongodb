@@ -54,15 +54,6 @@ $tag = Tag::findOrCreate('tag 1', 'my type');
 //tags have slugs
 $tag = Tag::findOrCreate('yet another tag');
 $tag->slug; //returns "yet-another-tag"
-
-//tags are sortable
-$tag = Tag::findOrCreate('my tag');
-$tag->order_column; //returns 1
-$tag2 = Tag::findOrCreate('another tag');
-$tag2->order_column; //returns 2
-
-//manipulating the order of tags
-$tag->swapOrder($anotherTag);
 ```
 
 ## Requirements

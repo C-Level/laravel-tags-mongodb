@@ -10,8 +10,6 @@ class Tag extends \Jenssegers\Mongodb\Eloquent\Model
 {
     use HasSlug;
 
-    public $translatable = ['name', 'slug'];
-
     public $guarded = [];
 
     public function scopeWithType(Builder $query, string $type = null): Builder
