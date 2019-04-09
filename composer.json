@@ -1,5 +1,5 @@
 {
-    "name": "clevel/laravel-tags",
+    "name": "clevel/laravel-tags-mongodb",
     "description": "Add tags and taggable behaviour to your Laravel app For MongoDB",
     "keywords": [
         "clevel",
