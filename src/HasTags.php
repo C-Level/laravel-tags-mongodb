@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 trait HasTags
 {
     protected $queuedTags = [];
+    protected static $model;
 
     public static function getTagClassName(): string
     {
@@ -19,6 +20,7 @@ trait HasTags
 
     public static function bootHasTags()
     {
+        static::$model = get_class(static::getModel());
         static::created(function (Model $taggableModel) {
             if (count($taggableModel->queuedTags) > 0) {
                 $taggableModel->attachTags($taggableModel->queuedTags);
@@ -37,7 +39,14 @@ trait HasTags
     public function tags(): MorphToMany
     {
         return $this
-            ->morphToMany(self::getTagClassName(), 'taggable');
+            ->morphToMany(self::getTagClassName(), 'taggable')
+            ->orderBy('order_column');
+    }
+
+    public function scopeWithRelatedTags(Builder $query)
+    {
+        $ids = \DB::collection('taggables')->where('taggable_type', static::$model)->where('taggable_id', $this->id)->pluck('tag_id');
+        return Tag::query()->whereIn('_id', $ids)->get();
     }
 
     /**
