@@ -46,7 +46,7 @@ trait HasTags
      */
     public function setTagsAttribute($tags)
     {
-        if (! $this->exists) {
+        if (!$this->exists) {
             $this->queuedTags = $tags;
 
             return;
@@ -143,6 +143,22 @@ trait HasTags
     }
 
     /**
+     * @param array|\ArrayAccess|\Clevel\Tags\Tag $tags
+     * @param string|null $type
+     * @return $this
+     */
+    public function attachTagsWithType($tags, string $type = null)
+    {
+        $className = static::getTagClassName();
+
+        $tags = collect($className::findOrCreate($tags, $type));
+
+        $this->tags()->syncWithoutDetaching($tags->pluck('id')->toArray());
+
+        return $this;
+    }
+
+    /**
      * @param string|\Clevel\Tags\Tag $tag
      *
      * @return $this
@@ -153,13 +169,23 @@ trait HasTags
     }
 
     /**
-     * @param array|\ArrayAccess $tags
-     *
+     * @param string|\Clevel\Tags\Tag $tag
+     * @param string|null $type
      * @return $this
      */
-    public function detachTags($tags)
+    public function attachTagWithType($tag, string $type = null)
     {
-        $tags = static::convertToTags($tags);
+        return $this->attachTagsWithType([$tag], $type);
+    }
+
+    /**
+     * @param array|\ArrayAccess $tags
+     * @param string|null $type
+     * @return $this
+     */
+    public function detachTags($tags, string $type = null)
+    {
+        $tags = static::convertToTags($tags, $type);
 
         collect($tags)
             ->filter()
@@ -172,12 +198,12 @@ trait HasTags
 
     /**
      * @param string|\Clevel\Tags\Tag $tag
-     *
+     * @param string|null $type
      * @return $this
      */
-    public function detachTag($tag)
+    public function detachTag($tag, string $type = null)
     {
-        return $this->detachTags([$tag]);
+        return $this->detachTags([$tag], $type);
     }
 
     /**
@@ -213,9 +239,9 @@ trait HasTags
         return $this;
     }
 
-    protected static function convertToTags($values, $type = null, $locale = null)
+    protected static function convertToTags($values, $type = null)
     {
-        return collect($values)->map(function ($value) use ($type, $locale) {
+        return collect($values)->map(function ($value) use ($type) {
             if ($value instanceof Tag) {
                 if (isset($type) && $value->type != $type) {
                     throw new InvalidArgumentException("Type was set to {$type} but tag is of type {$value->type}");
@@ -226,20 +252,20 @@ trait HasTags
 
             $className = static::getTagClassName();
 
-            return $className::findFromString($value, $type, $locale);
+            return $className::findFromString($value, $type);
         });
     }
 
-    protected static function convertToTagsOfAnyType($values, $locale = null)
+    protected static function convertToTagsOfAnyType($values)
     {
-        return collect($values)->map(function ($value) use ($locale) {
+        return collect($values)->map(function ($value) {
             if ($value instanceof Tag) {
                 return $value;
             }
 
             $className = static::getTagClassName();
 
-            return $className::findFromStringOfAnyType($value, $locale);
+            return $className::findFromStringOfAnyType($value);
         });
     }
 
@@ -266,7 +292,7 @@ trait HasTags
                     $tagModel->getTable(),
                     'taggables.tag_id',
                     '=',
-                    $tagModel->getTable().'.'.$tagModel->getKeyName()
+                    $tagModel->getTable() . '.' . $tagModel->getKeyName()
                 )
                     ->where('tags.type', $type);
             })
