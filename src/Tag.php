@@ -18,12 +18,12 @@ class Tag extends \Jenssegers\Mongodb\Eloquent\Model
             return $query;
         }
 
-        return $query->where('type', $type)->orderBy('order_column');
+        return $query->where('type', $type);
     }
 
     public function scopeContaining(Builder $query, string $name): Builder
     {
-        return $query->where('name','like','%'.strtolower($name).'%');
+        return $query->where('name', 'like', '%' . strtolower($name) . '%');
     }
 
     /**
@@ -48,7 +48,7 @@ class Tag extends \Jenssegers\Mongodb\Eloquent\Model
 
     public static function getWithType(string $type): DbCollection
     {
-        return static::withType($type)->orderBy('order_column')->get();
+        return static::withType($type)->get();
     }
 
     public static function findFromString(string $name, string $type = null)
@@ -73,7 +73,7 @@ class Tag extends \Jenssegers\Mongodb\Eloquent\Model
 
         $tag = static::findFromString($name, $type);
 
-        if (! $tag) {
+        if (!$tag) {
             $tag = static::create([
                 'name' => $name,
                 'type' => $type,

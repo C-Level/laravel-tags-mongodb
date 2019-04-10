@@ -13,7 +13,7 @@ class TagsServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/tags.php' => config_path('tags.php'),
+                __DIR__ . '/../config/tags.php' => config_path('tags.php'),
             ], 'config');
         }
     }
@@ -22,6 +22,5 @@ class TagsServiceProvider extends ServiceProvider
      * Register the application services.
      */
     public function register()
-    {
-    }
+    { }
 }

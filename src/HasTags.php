@@ -13,6 +13,7 @@ trait HasTags
     protected $queuedTags = [];
     protected static $model;
 
+
     public static function getTagClassName(): string
     {
         return Tag::class;
@@ -39,14 +40,27 @@ trait HasTags
     public function tags(): MorphToMany
     {
         return $this
-            ->morphToMany(self::getTagClassName(), 'taggable')
-            ->orderBy('order_column');
+            ->morphToMany(self::getTagClassName(), 'taggable');
     }
 
-    public function scopeWithRelatedTags(Builder $query)
+    public function scopeWithRelatedTags(Builder $query, $type = null)
     {
         $ids = \DB::collection('taggables')->where('taggable_type', static::$model)->where('taggable_id', $this->id)->pluck('tag_id');
-        return Tag::query()->whereIn('_id', $ids)->get();
+        $tags = Tag::query()->whereIn('_id', $ids);
+        if ($type !== null) {
+            $tags->where('type', $type);
+        }
+        return $tags->get();
+    }
+
+    public function taggableIds($type = null)
+    {
+        $ids = \DB::collection('taggables')->where('taggable_type', static::$model)->where('taggable_id', $this->id)->pluck('tag_id');
+        $tags = Tag::query()->whereIn('_id', $ids);
+        if ($type !== null) {
+            $tags->where('type', $type);
+        }
+        return $tags->pluck('_id');
     }
 
     /**
@@ -242,7 +256,7 @@ trait HasTags
 
         $tags = collect($className::findOrCreate($tags, $type));
 
-        $this->syncTagIds($tags->pluck('id')->toArray(), $type);
+        $this->syncTagIds($tags->pluck('_id')->toArray(), $type);
 
         return $this;
     }
@@ -289,24 +303,8 @@ trait HasTags
         $isUpdated = false;
 
         // Get a list of tag_ids for all current tags
-        $current = $this->tags()
-            ->newPivotStatement()
-            ->where('taggable_id', $this->getKey())
-            ->where('taggable_type', $this->getMorphClass())
-            ->when($type !== null, function ($query) use ($type) {
-                $tagModel = $this->tags()->getRelated();
-
-                return $query->join(
-                    $tagModel->getTable(),
-                    'taggables.tag_id',
-                    '=',
-                    $tagModel->getTable() . '.' . $tagModel->getKeyName()
-                )
-                    ->where('tags.type', $type);
-            })
-            ->pluck('tag_id')
+        $current = $this->taggableIds()
             ->all();
-
         // Compare to the list of ids given to find the tags to remove
         $detach = array_diff($current, $ids);
         if ($detaching && count($detach) > 0) {
