@@ -107,12 +107,13 @@ trait HasTags
     public function scopeWithAnyTags(Builder $query, $tags, string $type = null): Builder
     {
         $tags = static::convertToTags($tags, $type);
+        $tagIds = $tags->filter(function ($var) {
+            return $var instanceof Tag;
+        })->pluck('id');
+        $ids = \DB::collection('taggables')->where('taggable_type', get_class($this->getModel()))->whereIn('tag_id', $tagIds)->pluck('taggable_id');
 
-        return $query->whereHas('tags', function (Builder $query) use ($tags) {
-            $tagIds = collect($tags)->pluck('id');
-
-            $query->whereIn('tags.id', $tagIds);
-        });
+        $query->whereIn('id', $ids);
+        return $query;
     }
 
     public function scopeWithAllTagsOfAnyType(Builder $query, $tags): Builder
